@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuessTheLyrics - Web Multiplayer Engine</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 600px; background: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); text-align: center; border: 1px solid #334155; }
+        h1 { color: #f43f5e; margin-bottom: 25px; font-weight: 800; letter-spacing: -0.5px; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #475569; border-radius: 8px; background: #0f172a; color: #fff; font-size: 16px; }
+        button { width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; background: #f43f5e; color: white; }
+        button:hover { background: #e11d48; transform: translateY(-1px); }
+        .hidden { display: none; }
+        .opsi-container { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 20px; }
+        .btn-opsi { background: #334155; text-align: left; padding: 15px; border-radius: 8px; }
+        .btn-opsi:hover { background: #2563eb; }
+        .list-box { text-align: left; background: #0f172a; padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid #334155; }
+        .row-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1e293b; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎵 GuessTheLyrics</h1>
+
+    <div id="lobby-view">
+        <input type="text" id="username" placeholder="Ketik Username Player...">
+        <button onclick="App.createRoom()">Buat Room Baru (Host)</button>
+        <div style="margin: 20px 0; color: #64748b; font-size: 14px;">— ATAU —</div>
+        <input type="text" id="room-code-input" placeholder="Masukkan Kode PIN Room...">
+        <button onclick="App.joinRoom()" style="background: #2563eb;">Gabung Match</button>
+    </div>
+
+    <div id="waiting-view" class="hidden">
+        <h2>Room PIN: <span id="display-room-code" style="color: #f43f5e;"></span></h2>
+        <p style="color: #94a3b8;">Menunggu pemain terhubung simpul...</p>
+        <div class="list-box">
+            <h4 style="margin-top: 0;">Daftar Koneksi Simpul Aktif:</h4>
+            <div id="player-list"></div>
+        </div>
+        <button id="start-game-btn" class="hidden" onclick="App.startGame()" style="background: #10b981; margin-top: 20px;">Mulai Match 🚀</button>
+    </div>
+
+    <div id="game-view" class="hidden">
+        <h3 id="question-number" style="color: #38bdf8;">Soal</h3>
+        <blockquote id="lyric-prompt" style="font-size: 18px; margin: 20px 0; line-height: 1.6; background: #0f172a; padding: 20px; border-radius: 8px; font-style: italic;"></blockquote>
+        <div class="opsi-container" id="options-box"></div>
+    </div>
+
+    <div id="leaderboard-view" class="hidden">
+        <h2 id="leaderboard-title" style="color: #10b981;">Papan Peringkat Sementara</h2>
+        <div class="list-box" id="leaderboard-data"></div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/state.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/socket.js"></script>
+</body>
+</html>
