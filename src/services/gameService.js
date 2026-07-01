@@ -23,12 +23,57 @@ class GameService {
     // fallback jika data di db kurang dari 5 atau gagal fetch
     if (!questions || questions.length < 5) {
       questions = [
-        { lirik: "Aku yang dulu bukanlah yang sekarang...", opsi: { A: "Cinta Satu Malam", B: "Lagu Tegar", C: "Alamat Palsu", D: "Kemesraan" }, jawabanBenar: "B" },
-        { lirik: "Hingga tua bersama, menjaga hati ini...", opsi: { A: "Kopi Dangdut", B: "Komang", C: "Kisah Sempurna", D: "Kemesraan" }, jawabanBenar: "B" },
-        { lirik: "Ku menangis... membayangkan...", opsi: { A: "Hati-Hati di Jalan", B: "Sang Dewi", C: "Lirik Ratapan", D: "Matahariku" }, jawabanBenar: "C" },
-        { lirik: "Begitu syulit lupakan Rehan...", opsi: { A: "Lagu Viral", B: "Cukup Diri Ini", C: "Sial", D: "Gara-Gara Sebotol" }, jawabanBenar: "A" },
-        { lirik: "Kau rumahku, tempatku bersandar...", opsi: { A: "Tertawan Hati", B: "Rumah", C: "Rayuan Perempuan Gila", D: "Monokrom" }, jawabanBenar: "B" }
-      ];
+  {
+    lirik: "Tak ingin usai, cahaya mu temani hariku. Walau semua telah berlalu, ku tak mampu melupakanmu...",
+    opsi: {
+      A: "Tak Ingin Usai - Keisya Levronka",
+      B: "Komang - Raim Laode",
+      C: "Sial - Mahalini",
+      D: "Tak Segampang Itu - Anggi Marito"
+    },
+    jawabanBenar: "A"
+  },
+  {
+    lirik: "Sebab kau terlalu indah dari sekadar kata, dunia berhenti sejenak menikmati indahmu...",
+    opsi: {
+      A: "Komang - Raim Laode",
+      B: "Sisa Rasa - Mahalini",
+      C: "Hati-Hati di Jalan - Tulus",
+      D: "Rumah ke Rumah - Hindia"
+    },
+    jawabanBenar: "A"
+  },
+  {
+    lirik: "Perjalanan membawamu bertemu denganku, ku bertemu kamu. Sepertimu yang kucari, konon aku juga seperti yang kaucari...",
+    opsi: {
+      A: "Hati-Hati di Jalan - Tulus",
+      B: "Bertaut - Nadin Amizah",
+      C: "Monokrom - Tulus",
+      D: "Evaluasi - Hindia"
+    },
+    jawabanBenar: "A"
+  },
+  {
+    lirik: "Memang tidak mudah, tapi ku sudah terbiasa. Sendiri menjalani hari tanpa dirimu lagi...",
+    opsi: {
+      A: "Sial - Mahalini",
+      B: "Tak Segampang Itu - Anggi Marito",
+      C: "Pesan Terakhir - Lyodra",
+      D: "Bawa Dia Kembali - Mahalini"
+    },
+    jawabanBenar: "B"
+  },
+  {
+    lirik: "Semua yang sirna kan kembali lagi, semua yang sempat hilang akan datang menghampiri...",
+    opsi: {
+      A: "Bertaut - Nadin Amizah",
+      B: "Rayuan Perempuan Gila - Nadin Amizah",
+      C: "Tak Ingin Usai - Keisya Levronka",
+      D: "Sisa Rasa - Mahalini"
+    },
+    jawabanBenar: "B"
+  }
+]
     }
 
     // Batasi maksimum hanya sampai 5 soal saja sesuai kriteria poin 7
