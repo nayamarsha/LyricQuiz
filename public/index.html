@@ -13,11 +13,20 @@
         button:hover { background: #e11d48; transform: translateY(-1px); }
         .hidden { display: none !important; }
         .opsi-container { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 20px; }
-        .btn-opsi { background: #334155; text-align: left; padding: 15px; border-radius: 8px; color: #fff; font-weight: normal; }
+        
+        /* Style Tombol Opsi Default */
+        .btn-opsi { background: #334155; text-align: left; padding: 15px; border-radius: 8px; color: #fff; font-weight: normal; font-size: 16px; border: 2px solid transparent; transition: all 0.2s ease; }
         .btn-opsi:hover:not(:disabled) { background: #475569; }
-        .btn-opsi.terpilih { background: #10b981 !important; border: 2px solid #34d399; font-weight: bold; }
+        
+        /* Poin 1: Efek klik nunggu timer (Latar putih, teks hitam) */
+        .btn-opsi.state-menunggu { background: #ffffff !important; color: #0f172a !important; font-weight: bold; border: 2px solid #cbd5e1; }
+        
+        /* Poin 2: Efek evaluasi jawaban akhir */
+        .btn-opsi.jawaban-benar { background: #10b981 !important; color: #ffffff !important; font-weight: bold; border: 2px solid #34d399; }
+        .btn-opsi.jawaban-salah { background: #ef4444 !important; color: #ffffff !important; font-weight: bold; border: 2px solid #f87171; }
+
         .list-box { text-align: left; background: #0f172a; padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid #334155; }
-        .row-item { display: flex; justify-content: space-between; padding: 10px 10px; border-bottom: 1px solid #1e293b; border-radius: 6px; }
+        .row-item { display: flex; justify-content: space-between; padding: 10px 10px; border-bottom: 1px solid #1e293b; border-radius: 6px; align-items: center; }
         .highlight-user { background: #334155; border-left: 4px solid #f43f5e; font-weight: bold; }
         .timer-badge { background: #f59e0b; color: #0f172a; padding: 6px 14px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
         .btn-exit { background: #dc2626; font-size: 16px; padding: 14px; width: 100%; margin-top: 20px; }
@@ -25,6 +34,7 @@
         .btn-back { background: #475569; font-size: 14px; padding: 8px 16px; width: auto; margin-top: 10px; display: inline-block; }
         .btn-back:hover { background: #334155; }
         .menu-selection { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+        .badge-stats { font-size: 13px; font-weight: normal; display: block; color: #94a3b8; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -40,11 +50,9 @@
 
         <div id="form-container" class="hidden">
             <input type="text" id="username" placeholder="Ketik Username Anda...">
-
             <div id="join-fields" class="hidden">
                 <input type="text" id="room-code-input" placeholder="Masukkan Kode PIN Room...">
             </div>
-
             <button id="btn-submit-action" onclick="App.submitLobbyForm()">Mulai</button>
             <button onclick="UI.resetLobbyMenu()" class="btn-back">⬅️ Kembali ke Menu</button>
         </div>
@@ -52,9 +60,9 @@
 
     <div id="waiting-view" class="hidden">
         <h2>Room PIN: <span id="display-room-code" style="color: #f43f5e;"></span></h2>
-        <p style="color: #94a3b8;">Menunggu pemain masuk ke dalam room...</p>
+        <p style="color: #94a3b8;">Menunggu pemain terhubung simpul...</p>
         <div class="list-box">
-            <h4 style="margin-top: 0;">Daftar Pemain:</h4>
+            <h4 style="margin-top: 0;">Daftar Koneksi Simpul Aktif:</h4>
             <div id="player-list"></div>
         </div>
         <button id="start-game-btn" class="hidden" onclick="App.startGame()" style="background: #10b981; margin-top: 20px;">Mulai Match 🚀</button>

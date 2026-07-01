@@ -10,8 +10,6 @@ const UI = {
 
   showLobbyForm(mode) {
     this.modeLobby = mode;
-    
-    // Sembunyikan menu utama pilihan dan munculkan wadah form pengisian
     document.getElementById('menu-utama').classList.add('hidden');
     document.getElementById('form-container').classList.remove('hidden');
 
@@ -31,11 +29,8 @@ const UI = {
 
   resetLobbyMenu() {
     this.modeLobby = '';
-    
-    // Balikkan kondisi: Munculkan kembali menu utama pilihan, sembunyikan form pengisian
     document.getElementById('menu-utama').classList.remove('hidden');
     document.getElementById('form-container').classList.add('hidden');
-    
     document.getElementById('username').value = '';
     document.getElementById('room-code-input').value = '';
   },
@@ -54,16 +49,25 @@ const UI = {
     }).join('');
   },
 
-  renderLeaderboard(data) {
+  // Poin 3: Modifikasi tampilan data leaderboard akhir untuk menyisipkan summary benar/salah
+  renderLeaderboard(data, isFinal = false) {
     const box = document.getElementById('leaderboard-data');
     box.innerHTML = data.map((p, idx) => {
       const isSelf = p.username === State.username;
       const highlightClass = isSelf ? 'highlight-user' : '';
+      
+      // Jika leaderboard akhir, cetak string summary stat jawaban
+      const statsHtml = isFinal 
+        ? `<span class="badge-stats">✅ Benar: ${p.benar || 0} | ❌ Salah: ${p.salah || 0}</span>` 
+        : '';
 
       return `
         <div class='row-item ${highlightClass}'>
-            <span><strong>#${idx + 1}</strong> ${p.username}</span>
-            <span style='color: #38bdf8;'>${p.score} pts</span>
+            <div>
+                <span><strong>#${idx + 1}</strong> ${p.username}</span>
+                ${statsHtml}
+            </div>
+            <span style='color: #38bdf8; font-weight: bold;'>${p.score} pts</span>
         </div>
     `;
     }).join('');
