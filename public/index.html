@@ -6,17 +6,25 @@
     <title>GuessTheLyrics - Web Multiplayer Engine</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 600px; background: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); text-align: center; border: 1px solid #334155; }
+        .container { width: 100%; max-width: 600px; background: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); text-align: center; border: 1px solid #334155; position: relative; }
         h1 { color: #f43f5e; margin-bottom: 25px; font-weight: 800; letter-spacing: -0.5px; }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #475569; border-radius: 8px; background: #0f172a; color: #fff; font-size: 16px; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #475569; border-radius: 8px; background: #0f172a; color: #fff; font-size: 16px; box-sizing: border-box; }
         button { width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; background: #f43f5e; color: white; }
         button:hover { background: #e11d48; transform: translateY(-1px); }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .opsi-container { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 20px; }
-        .btn-opsi { background: #334155; text-align: left; padding: 15px; border-radius: 8px; }
-        .btn-opsi:hover { background: #2563eb; }
+        .btn-opsi { background: #334155; text-align: left; padding: 15px; border-radius: 8px; color: #fff; font-weight: normal; }
+        .btn-opsi:hover:not(:disabled) { background: #475569; }
+        .btn-opsi.terpilih { background: #10b981 !important; border: 2px solid #34d399; font-weight: bold; }
         .list-box { text-align: left; background: #0f172a; padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid #334155; }
-        .row-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1e293b; }
+        .row-item { display: flex; justify-content: space-between; padding: 10px 10px; border-bottom: 1px solid #1e293b; border-radius: 6px; }
+        .highlight-user { background: #334155; border-left: 4px solid #f43f5e; font-weight: bold; }
+        .timer-badge { background: #f59e0b; color: #0f172a; padding: 6px 14px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
+        .btn-exit { background: #dc2626; font-size: 16px; padding: 14px; width: 100%; margin-top: 20px; }
+        .btn-exit:hover { background: #b91c1c; }
+        .btn-back { background: #475569; font-size: 14px; padding: 8px 16px; width: auto; margin-top: 10px; display: inline-block; }
+        .btn-back:hover { background: #334155; }
+        .menu-selection { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -25,11 +33,21 @@
     <h1>🎵 GuessTheLyrics</h1>
 
     <div id="lobby-view">
-        <input type="text" id="username" placeholder="Ketik Username Player...">
-        <button onclick="App.createRoom()">Buat Room Baru (Host)</button>
-        <div style="margin: 20px 0; color: #64748b; font-size: 14px;">— ATAU —</div>
-        <input type="text" id="room-code-input" placeholder="Masukkan Kode PIN Room...">
-        <button onclick="App.joinRoom()" style="background: #2563eb;">Gabung Match</button>
+        <div id="menu-utama" class="menu-selection">
+            <button onclick="UI.showLobbyForm('create')" style="background: #ec4899;">➕ Buat Room Baru</button>
+            <button onclick="UI.showLobbyForm('join')" style="background: #2563eb;">🔌 Gabung Match</button>
+        </div>
+
+        <div id="form-container" class="hidden">
+            <input type="text" id="username" placeholder="Ketik Username Anda...">
+
+            <div id="join-fields" class="hidden">
+                <input type="text" id="room-code-input" placeholder="Masukkan Kode PIN Room...">
+            </div>
+
+            <button id="btn-submit-action" onclick="App.submitLobbyForm()">Mulai</button>
+            <button onclick="UI.resetLobbyMenu()" class="btn-back">⬅️ Kembali ke Menu</button>
+        </div>
     </div>
 
     <div id="waiting-view" class="hidden">
@@ -43,6 +61,7 @@
     </div>
 
     <div id="game-view" class="hidden">
+        <div id="timer-container" class="timer-badge">Waktu: <span id="timer-countdown">15</span>s</div>
         <h3 id="question-number" style="color: #38bdf8;">Soal</h3>
         <blockquote id="lyric-prompt" style="font-size: 18px; margin: 20px 0; line-height: 1.6; background: #0f172a; padding: 20px; border-radius: 8px; font-style: italic;"></blockquote>
         <div class="opsi-container" id="options-box"></div>
@@ -51,6 +70,7 @@
     <div id="leaderboard-view" class="hidden">
         <h2 id="leaderboard-title" style="color: #10b981;">Papan Peringkat Sementara</h2>
         <div class="list-box" id="leaderboard-data"></div>
+        <button id="exit-game-btn" onclick="App.exitGame()" class="btn-exit hidden">🚪 Keluar dari Game</button>
     </div>
 </div>
 

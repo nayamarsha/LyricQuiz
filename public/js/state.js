@@ -2,5 +2,6 @@
 const State = {
   currentRoomCode: '',
   isHost: false,
-  username: ''
+  username: '',
+  role: 'Pemain' 
 };

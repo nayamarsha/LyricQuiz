@@ -1,17 +1,39 @@
 // src/services/gameService.js
-const db = require('../../database/connection');
-const scoreCalculator = require('../utils/scoreCalculator');
-const broadcast = require('../../server/broadcast');
-const gameConfig = require('../../config/game.config');
+const db = require('../../database/connection'); // Keluar ke 'src', keluar ke 'root', masuk ke 'database'
+const scoreCalculator = require('../utils/scoreCalculator'); // Keluar ke 'src', masuk ke 'utils'
+const broadcast = require('../../server/broadcast'); // Keluar ke 'src', keluar ke 'root', masuk ke 'server'
+const gameConfig = require('../../config/game.config'); // Keluar ke 'src', keluar ke 'root', masuk ke 'config'
 
 class GameService {
   constructor() {
     this.rooms = {};
   }
 
-  async createRoom(hostId, username) {
+  async createRoom(hostId, username, role) {
     const roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-    const questions = await db.getQuestions();
+    
+    // Simulasi penanganan total 5 soal terlepas dari database (Poin 7)
+    let questions = [];
+    try {
+      questions = await db.getQuestions();
+    } catch (e) {
+      console.log("Database connection error, using mock core setup.");
+    }
+
+    // fallback jika data di db kurang dari 5 atau gagal fetch
+    if (!questions || questions.length < 5) {
+      questions = [
+        { lirik: "Aku yang dulu bukanlah yang sekarang...", opsi: { A: "Cinta Satu Malam", B: "Lagu Tegar", C: "Alamat Palsu", D: "Kemesraan" }, jawabanBenar: "B" },
+        { lirik: "Hingga tua bersama, menjaga hati ini...", opsi: { A: "Kopi Dangdut", B: "Komang", C: "Kisah Sempurna", D: "Kemesraan" }, jawabanBenar: "B" },
+        { lirik: "Ku menangis... membayangkan...", opsi: { A: "Hati-Hati di Jalan", B: "Sang Dewi", C: "Lirik Ratapan", D: "Matahariku" }, jawabanBenar: "C" },
+        { lirik: "Begitu syulit lupakan Rehan...", opsi: { A: "Lagu Viral", B: "Cukup Diri Ini", C: "Sial", D: "Gara-Gara Sebotol" }, jawabanBenar: "A" },
+        { lirik: "Kau rumahku, tempatku bersandar...", opsi: { A: "Tertawan Hati", B: "Rumah", C: "Rayuan Perempuan Gila", D: "Monokrom" }, jawabanBenar: "B" }
+      ];
+    }
+
+    // Batasi maksimum hanya sampai 5 soal saja sesuai kriteria poin 7
+    questions = questions.slice(0, 5);
+
     this.rooms[roomCode] = {
       hostId,
       players: {},
@@ -20,15 +42,32 @@ class GameService {
       status: 'WAITING',
       questionStartTime: null
     };
-    this.rooms[roomCode].players[hostId] = { username, score: 0, answered: false };
+
+    // Poin 1 & 3: Menyimpan data berdasarkan Role pilihan
+    this.rooms[roomCode].players[hostId] = { username, score: 0, answered: false, role };
     return roomCode;
   }
 
-  joinRoom(roomCode, playerId, username) {
+  joinRoom(roomCode, playerId, username, role) {
     const room = this.rooms[roomCode];
     if (!room || room.status !== 'WAITING') return false;
-    room.players[playerId] = { username, score: 0, answered: false };
+    room.players[playerId] = { username, score: 0, answered: false, role };
     return true;
+  }
+
+  leaveRoom(roomCode, playerId) {
+    const room = this.rooms[roomCode];
+    if (!room) return null;
+    
+    delete room.players[playerId];
+    
+    // Jika room kosong atau host keluar, tutup roomnya
+    if (Object.keys(room.players).length === 0 || room.hostId === playerId) {
+      delete this.rooms[roomCode];
+      return { destroyed: true };
+    }
+    
+    return { destroyed: false, remainingPlayers: Object.values(room.players) };
   }
 
   getPlayers(roomCode) {
@@ -44,8 +83,11 @@ class GameService {
     if (!room) return;
 
     room.status = 'PLAYING';
-    // Reset status jawaban setiap pemain untuk sesi soal baru
-    Object.keys(room.players).forEach(id => room.players[id].answered = false);
+    
+    // Reset status jawaban pemain. Jika dia adalah penonton, set answered ke true
+    Object.keys(room.players).forEach(id => {
+      room.players[id].answered = (room.players[id].role === 'Penonton');
+    });
 
     const question = room.questions[room.currentQuestionIdx];
     room.questionStartTime = Date.now();
@@ -69,42 +111,43 @@ class GameService {
     const currentQuestion = room.questions[room.currentQuestionIdx];
     const responseTime = Date.now() - room.questionStartTime;
 
-    if (jawaban === currentQuestion.jawabanBenar) {
+    // Hanya beri nilai jika role-nya adalah Pemain dan benar
+    if (player.role === 'Pemain' && jawaban === currentQuestion.jawabanBenar) {
       player.score += scoreCalculator.calculate(responseTime);
     }
 
-    // Evaluasi apakah seluruh simpul client yang terhubung sudah mengirim jawaban
+    // Evaluasi seluruh pemain aktif (mengabaikan penonton karena sudah otomatis true)
     const allAnswered = Object.values(room.players).every(p => p.answered);
     const sortedLeaderboard = Object.values(room.players).sort((a, b) => b.score - a.score);
 
     if (allAnswered) {
-      // PUSH BROADCAST: Kirim leaderboard hanya saat SEMUA pemain selesai menjawab soal ini
       broadcast.toRoom(io, roomCode, 'updateLeaderboard', sortedLeaderboard);
       this.handleTransition(io, roomCode);
     } else {
-      // Jika belum semua menjawab, beri tahu client yang bersangkutan bahwa jawabannya telah diterima
       io.to(playerId).emit('waitingForOthers');
     }
   }
 
   handleTransition(io, roomCode) {
     const room = this.rooms[roomCode];
+    if (!room) return;
     
     if (room.currentQuestionIdx < room.questions.length - 1) {
       room.currentQuestionIdx++;
-      // Memberikan jeda waktu evaluasi leaderboard sebelum otomatis ke soal berikutnya
-      setTimeout(() => this.startNextQuestion(io, roomCode), gameConfig.transitionDelayMs);
+      const delay = gameConfig.transitionDelayMs || 4000;
+      setTimeout(() => this.startNextQuestion(io, roomCode), delay);
     } else {
       room.status = 'FINISHED';
       const finalLeaderboard = Object.values(room.players).sort((a, b) => b.score - a.score);
       broadcast.toRoom(io, roomCode, 'gameFinished', finalLeaderboard);
 
-      // Async Non-Blocking Task: Pipeline penyimpanan arsip skor ke MySQL Database
       finalLeaderboard.forEach(async (p) => {
-        try {
-          await db.saveFinalScore(p.username, p.score);
-        } catch (err) {
-          console.error(`[Error] Gagal mengarsipkan skor ${p.username}:`, err);
+        if(p.role === 'Pemain') {
+            try {
+              await db.saveFinalScore(p.username, p.score);
+            } catch (err) {
+              console.error(`[Error] Gagal mengarsipkan skor ${p.username}:`, err);
+            }
         }
       });
     }

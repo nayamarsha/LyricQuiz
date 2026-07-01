@@ -1,44 +1,68 @@
 const gameService = require('../src/services/gameService');
 const broadcast = require('./broadcast');
 
-function registerEvents(io, socket) {
-  console.log(`[Network Log] Node Client Terhubung: ${socket.id}`);
-
-  socket.on('createRoom', async (username) => {
-    try {
-      const roomCode = await gameService.createRoom(socket.id, username);
+const messageHandler = {
+  registerEvents(io, socket) {
+    
+    socket.on('createRoom', async ({ username, role }) => {
+      const roomCode = await gameService.createRoom(socket.id, username, role);
       socket.join(roomCode);
+      
       const players = gameService.getPlayers(roomCode);
       socket.emit('roomCreated', { roomCode, players });
-      console.log(`[Room Engine] Room ${roomCode} diinisiasi oleh Host: ${username}`);
-    } catch (err) {
-      socket.emit('errorMsg', 'Gagal membuat room.');
-    }
-  });
+    });
 
-  socket.on('joinRoom', ({ roomCode, username }) => {
-    const success = gameService.joinRoom(roomCode, socket.id, username);
-    if (!success) {
-      return socket.emit('errorMsg', 'Room tidak valid atau game sudah dimulai.');
-    }
-    socket.join(roomCode);
-    broadcast.toRoom(io, roomCode, 'playerJoined', gameService.getPlayers(roomCode));
-  });
+    socket.on('joinRoom', ({ roomCode, username, role }) => {
+      const success = gameService.joinRoom(roomCode, socket.id, username, role);
+      
+      if (success) {
+        socket.join(roomCode);
+        const players = gameService.getPlayers(roomCode);
+        // Distribusikan daftar simpul aktif ke seluruh klien terhubung di dalam room
+        broadcast.toRoom(io, roomCode, 'roomUpdated', { players });
+      } else {
+        socket.emit('errorMsg', 'Gagal gabung room. Kemungkinan kode salah atau room sudah main.');
+      }
+    });
 
-  socket.on('startGame', ({ roomCode }) => {
-    if (gameService.isHost(roomCode, socket.id)) {
-      gameService.startNextQuestion(io, roomCode);
-    }
-  });
+    socket.on('startGame', ({ roomCode }) => {
+      if (gameService.isHost(roomCode, socket.id)) {
+        gameService.startNextQuestion(io, roomCode);
+      } else {
+        socket.emit('errorMsg', 'Hanya Host yang bisa memulai match!');
+      }
+    });
 
-  socket.on('submitAnswer', async ({ roomCode, jawaban }) => {
-    // Diproses menggunakan Concurrency Engine non-blocking (Naya Dev Task)
-    await gameService.processAnswer(io, roomCode, socket.id, jawaban);
-  });
+    socket.on('submitAnswer', ({ roomCode, jawaban }) => {
+      gameService.processAnswer(io, roomCode, socket.id, jawaban);
+    });
 
-  socket.on('disconnect', () => {
-    console.log(`[Network Log] Node Client Terputus: ${socket.id}`);
-  });
-}
+    // Poin 5: Menangani Event User keluar game secara manual
+    socket.on('leaveRoom', ({ roomCode }) => {
+      const res = gameService.leaveRoom(roomCode, socket.id);
+      socket.leave(roomCode);
+      socket.emit('roomLeft');
 
-module.exports = { registerEvents };
+      if (res && !res.destroyed) {
+        // kabari player lain kalau ada yang keluar
+        broadcast.toRoom(io, roomCode, 'roomUpdated', { players: res.remainingPlayers });
+      }
+    });
+
+    // Otomatis lepaskan simpul socket jika tab browser tertutup
+    socket.on('disconnect', () => {
+      // Cari jika socket ini terdaftar di salah satu room aktif
+      for (const code in gameService.rooms) {
+        if (gameService.rooms[code].players[socket.id]) {
+          const res = gameService.leaveRoom(code, socket.id);
+          if (res && !res.destroyed) {
+            broadcast.toRoom(io, code, 'roomUpdated', { players: res.remainingPlayers });
+          }
+          break;
+        }
+      }
+    });
+  }
+};
+
+module.exports = messageHandler;
