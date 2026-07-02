@@ -203,6 +203,49 @@ class GameService {
       });
     }
   }
+
+  async runPerformanceBenchmark() {
+    const { performance } = require('perf_hooks');
+    const db = require('../../database/connection');
+
+    // 1. Pengujian Pendekatan Asynchronous (Bawaan Driver MySQL Promise)
+    const startAsync = performance.now();
+    // Mengambil data soal dari database secara asinkron beberapa kali untuk beban stress-test
+    for (let i = 0; i < 50; i++) {
+      await db.getQuestions();
+    }
+    const endAsync = performance.now();
+    const execTimeAsync = (endAsync - startAsync) / 1000; // Konversi ke detik
+
+    // 2. Pengujian Pendekatan Sequential (Blocking Logika Simulasi)
+    const startSeq = performance.now();
+    for (let i = 0; i < 50; i++) {
+      // Mensimulasikan blocking thread sequential dengan synchronous loop berat sebelum query selesai
+      let totalHeavyCompute = 0;
+      for (let j = 0; j < 5e6; j++) { totalHeavyCompute += j; }
+      await db.getQuestions();
+    }
+    const endSeq = performance.now();
+    const execTimeSeq = (endSeq - startSeq) / 1000; // Konversi ke detik
+
+    // 3. Menghitung Nilai Speedup & Throughput
+    const speedup = execTimeSeq / (execTimeAsync || 0.001);
+    const totalTugas = 50; // Jumlah pemanggilan query
+    const throughputSeq = totalTugas / execTimeSeq;
+    const throughputAsync = totalTugas / execTimeAsync;
+
+    return {
+      executionTime: {
+        sequential: execTimeSeq.toFixed(4) + " detik",
+        async: execTimeAsync.toFixed(4) + " detik"
+      },
+      speedup: speedup.toFixed(2) + "x lebih cepat",
+      throughput: {
+        sequential: throughputSeq.toFixed(2) + " req/detik",
+        async: throughputAsync.toFixed(2) + " req/detik"
+      }
+    };
+  }
 }
 
 module.exports = new GameService();

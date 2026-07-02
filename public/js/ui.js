@@ -2,7 +2,7 @@ const UI = {
   modeLobby: '', 
 
   setView(viewId) {
-    ['lobby-view', 'waiting-view', 'game-view', 'leaderboard-view'].forEach(id => {
+    ['lobby-view', 'waiting-view', 'game-view', 'leaderboard-view', 'analysis-view'].forEach(id => {
       document.getElementById(id).classList.add('hidden');
     });
     document.getElementById(viewId).classList.remove('hidden');

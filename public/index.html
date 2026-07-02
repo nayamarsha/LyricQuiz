@@ -60,7 +60,7 @@
 
     <div id="waiting-view" class="hidden">
         <h2>Room PIN: <span id="display-room-code" style="color: #f43f5e;"></span></h2>
-        <p style="color: #94a3b8;">Menunggu pemain terhubung simpul...</p>
+        <p style="color: #94a3b8;">Menunggu pemain bergabung...</p>
         <div class="list-box">
             <h4 style="margin-top: 0;">Daftar Koneksi Simpul Aktif:</h4>
             <div id="player-list"></div>
@@ -78,7 +78,46 @@
     <div id="leaderboard-view" class="hidden">
         <h2 id="leaderboard-title" style="color: #10b981;">Papan Peringkat Sementara</h2>
         <div class="list-box" id="leaderboard-data"></div>
-        <button id="exit-game-btn" onclick="App.exitGame()" class="btn-exit hidden">🚪 Keluar dari Game</button>
+        
+        <div id="final-options-box" class="hidden" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+            <button onclick="App.lihatDashboardAnalisis()" style="background: #38bdf8; margin: 0;">📊 Lihat Analisis Kinerja</button>
+            <button id="exit-game-btn" onclick="App.exitGame()" class="btn-exit" style="background: #dc2626; margin: 0;">🚪 Menu Utama</button>
+        </div>
+    </div>
+
+    <div id="analysis-view" class="hidden">
+        <h2 style="color: #38bdf8; margin-bottom: 5px;">📊 Dashboard Analisis Kinerja</h2>
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Menghitung otomatis perbandingan komputasi sistem berbasis Node.js Engine</p>
+        
+        <div class="list-box" style="text-align: left;">
+            <table style="width: 100%; border-collapse: collapse; color: #f8fafc; font-size: 15px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #334155; text-align: left;">
+                        <th style="padding: 10px 5px;">Metrik Pengukuran</th>
+                        <th style="padding: 10px 5px; color: #f43f5e;">Sequential (Sim)</th>
+                        <th style="padding: 10px 5px; color: #10b981;">Asynchronous (Node)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #1e293b;">
+                        <td style="padding: 12px 5px; font-weight: bold;">Execution Time</td>
+                        <td style="padding: 12px 5px;" id="val-exec-seq">Menghitung...</td>
+                        <td style="padding: 12px 5px; font-weight: bold; color: #10b981;" id="val-exec-async">Menghitung...</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #1e293b;">
+                        <td style="padding: 12px 5px; font-weight: bold;">Throughput</td>
+                        <td style="padding: 12px 5px;" id="val-thru-seq">Menghitung...</td>
+                        <td style="padding: 12px 5px; font-weight: bold; color: #10b981;" id="val-thru-async">Menghitung...</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px 5px; font-weight: bold; color: #38bdf8;">Speedup Hasil</td>
+                        <td colspan="2" style="padding: 12px 5px; font-weight: bold; color: #38bdf8; text-align: center; background: #0f172a; border-radius: 6px; letter-spacing: 0.5px;" id="val-speedup">Mengukur...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <button onclick="App.kembaliKeLeaderboard()" class="btn-back" style="background: #475569; padding: 14px; width: 100%; margin-top: 20px; font-weight: bold; border-radius: 8px;">⬅️ Kembali ke Papan Skor</button>
     </div>
 </div>
 

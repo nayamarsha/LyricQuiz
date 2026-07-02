@@ -67,6 +67,29 @@ const App = {
         App.submitAnswer(''); // Otomatis kirim string kosong jika kehabisan waktu
       }
     }, 1000);
+  },
+  
+  lihatDashboardAnalisis() {
+    // Pindahkan view ke dashboard pengujian metrik halaman
+    UI.setView('analysis-view');
+
+    // Ambil kalkulasi otomatis dari server backend melalui API Fetch
+    fetch('/api/benchmark')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('val-exec-seq').innerText = data.executionTime.sequential;
+        document.getElementById('val-exec-async').innerText = data.executionTime.async;
+        document.getElementById('val-thru-seq').innerText = data.throughput.sequential;
+        document.getElementById('val-thru-async').innerText = data.throughput.async;
+        document.getElementById('val-speedup').innerText = data.speedup;
+      })
+      .catch(err => {
+        alert("Gagal memuat visualisasi metrik performa backend.");
+      });
+  },
+
+  kembaliKeLeaderboard() {
+    UI.setView('leaderboard-view');
   }
 };
 
@@ -143,13 +166,18 @@ socket.on('updateLeaderboard', (leaderboard) => {
 });
 
 socket.on('gameFinished', (finalLeaderboard) => {
-  State.gameStarted = false;
   clearInterval(timerInterval);
   UI.setView('leaderboard-view');
   document.getElementById('leaderboard-title').innerText = "🏆 HASIL AKHIR MATCH 🏆";
+
   document.getElementById('exit-game-btn').classList.remove('hidden');
-  UI.renderLeaderboard(finalLeaderboard, true); // true = tampilkan ringkasan jumlah jawaban Benar & Salah
+  const optBox = document.getElementById('final-options-box');
+  if (optBox) optBox.classList.remove('hidden');
+
+  UI.renderLeaderboard(finalLeaderboard, true); 
 });
+
+
 
 socket.on('roomLeft', () => {
   State.gameStarted = false;
