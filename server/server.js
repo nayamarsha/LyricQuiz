@@ -1,4 +1,3 @@
-// server/server.js
 require('dotenv').config(); // <- WAJIB DI BARIS PERTAMA
 
 const express = require('express');
@@ -17,9 +16,13 @@ io.on('connection', (socket) => {
   messageHandler.registerEvents(io, socket);
 });
 
-server.listen(serverConfig.port, () => {
+// AMAN: Menggunakan Port Dinamis dari Railway, jika tidak ada baru gunakan dari config/8080
+const PORT = process.env.PORT || serverConfig.port || 8080;
+
+// WAJIB: Tambahkan '0.0.0.0' agar bisa diakses dari jaringan luar Railway
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`====================================================`);
-  console.log(`[Central Server Node] Berjalan di http://localhost:${serverConfig.port}`);
+  console.log(`[Central Server Node] Berjalan di port: ${PORT}`);
   console.log(`[Environment] Mode: ${serverConfig.env}`);
   console.log(`====================================================`);
 });

@@ -60,7 +60,10 @@ class DatabaseConnection {
         const dataSeed = [
           ["Kulihat Ibu Pertiwi, sedang bersusah hati. Air matanya berlinang, mas intannya terkenang...", "Indonesia Raya", "Ibu Pertiwi", "Tanah Airku", "Rayuan Pulau Kelapa", "Bagimu Negeri", "B"],
           ["Hati-hati di jalan. Kukira kita akan bersama. Begitu banyak cerita yang telah kita lalui...", "Monokrom", "Sepatu", "Hati-Hati di Jalan", "Diri", "Gajah", "C"],
-          ["Sebab kau terlalu indah dari sekadar kata. Dunia berhenti sejenak menikmati indahmu...", "Komang", "Sesuatu di Jogja", "Untungnya, Hidup Harus Tetap Berjalan", "Penjaga Hati", "Rumah Singgah", "A"]
+          ["Sebab kau terlalu indah dari sekadar kata. Dunia berhenti sejenak menikmati indahmu...", "Komang", "Sesuatu di Jogja", "Untungnya, Hidup Harus Tetap Berjalan", "Penjaga Hati", "Rumah Singgah", "A"],
+          ["Mimpi adalah kunci untuk kita menaklukkan dunia. Berlarilah tanpa lelah sampai engkau meraihnya...", "Laskar Pelangi", "Sang Dewi", "Perahu Kertas", "Bintang di Surga", "Negeri di Awan", "A"],
+          ["Jangan salahkan faham ku kini tertuju oh. Siapa yang tau, Siapa yang mau, Kau di sana, Aku diseberangmu...", "Evaluasi", "Secukupnya", "Mangu", "Rumah Ke Rumah", "Membasuh", "C"],
+          ["Kalau memang harus terluka, aku akan belajar lagi. Sebab hati ini sudah terlatih patah hati...", "Patah", "Terlatih Patah Hati", "Aku Yang Salah", "Tak Segampang Itu", "Cinta Luar Biasa", "B"]
         ];
 
         const queryInsert = `
