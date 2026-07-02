@@ -3,6 +3,7 @@ let timerInterval = null;
 
 // Tambahkan sub-state lokal untuk menampung key pilihan sementara
 State.jawabanSaya = ''; 
+State.gameStarted = false;
 
 const App = {
   submitLobbyForm() {
@@ -84,6 +85,8 @@ socket.on('roomCreated', ({ roomCode, players }) => {
 });
 
 socket.on('roomUpdated', ({ players }) => {
+  if (!State.currentRoomCode) return; 
+  if(State.gameStarted) return; 
   UI.setView('waiting-view');
   document.getElementById('display-room-code').innerText = State.currentRoomCode;
   if (State.isHost) {
@@ -93,6 +96,7 @@ socket.on('roomUpdated', ({ players }) => {
 });
 
 socket.on('soalBaru', (data) => {
+  State.gameStarted = true;
   State.jawabanSaya = ''; // Reset pilihan di soal baru
   UI.setView('game-view');
   document.getElementById('question-number').innerText = `Soal ${data.nomor} dari ${data.totalSoal}`;
@@ -139,6 +143,7 @@ socket.on('updateLeaderboard', (leaderboard) => {
 });
 
 socket.on('gameFinished', (finalLeaderboard) => {
+  State.gameStarted = false;
   clearInterval(timerInterval);
   UI.setView('leaderboard-view');
   document.getElementById('leaderboard-title').innerText = "🏆 HASIL AKHIR MATCH 🏆";
@@ -147,6 +152,7 @@ socket.on('gameFinished', (finalLeaderboard) => {
 });
 
 socket.on('roomLeft', () => {
+  State.gameStarted = false;
   State.currentRoomCode = '';
   State.isHost = false;
   document.getElementById('exit-game-btn').classList.add('hidden');
