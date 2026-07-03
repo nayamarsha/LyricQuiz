@@ -42,15 +42,7 @@ class DatabaseConnection {
         );
       `);
 
-      // 5. Buat Tabel Skor (Untuk mencatat arsip leaderboard final jika belum ada)
-      await this.pool.query(`
-        CREATE TABLE IF NOT EXISTS skor_pemain (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          username VARCHAR(100) NOT NULL,
-          skor INT NOT NULL,
-          dibuat_pada TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
+      // Tabel skor arsip dinonaktifkan (arsip leaderboard tidak disimpan ke DB)
 
       // 6. Otomatis Seed Data Soal jika tabel masih kosong
       const [rows] = await this.pool.query('SELECT COUNT(*) as total FROM queries_soal');
@@ -111,20 +103,6 @@ class DatabaseConnection {
     } catch (err) {
       console.error('[MySQL Error] Gagal membaca tabel queries_soal:', err.message);
       return null;
-    }
-  }
-
-  // Menyimpan skor akhir ke MySQL
-  async saveFinalScore(username, score) {
-    if (!this.pool) return;
-    try {
-      await this.pool.query(
-        'INSERT INTO skor_pemain (username, skor) VALUES (?, ?)',
-        [username, score]
-      );
-      console.log(`[MySQL DB Replikasi] Sukses menyimpan data skor untuk: ${username}`);
-    } catch (err) {
-      console.error('[MySQL DB Error] Gagal menyimpan skor:', err.message);
     }
   }
 }

@@ -191,16 +191,6 @@ class GameService {
       room.status = 'FINISHED';
       const finalLeaderboard = Object.values(room.players).sort((a, b) => b.score - a.score);
       broadcast.toRoom(io, roomCode, 'gameFinished', finalLeaderboard);
-
-      finalLeaderboard.forEach(async (p) => {
-        if(p.role === 'Pemain') {
-            try {
-              await db.saveFinalScore(p.username, p.score);
-            } catch (err) {
-              console.error(`[Error] Gagal mengarsipkan skor ${p.username}:`, err);
-            }
-        }
-      });
     }
   }
 
